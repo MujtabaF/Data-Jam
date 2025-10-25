@@ -1,84 +1,99 @@
-# Data-Jam
-
-# 🌤️ ClimaZoneAI – Smart Energy Planning with AI
-
-## 🔍 Overview
-ClimaZoneAI is an AI tool that helps industries and governments make smarter energy decisions.  
-It uses Canadian weather data to **predict how much renewable energy (solar, wind, hydro)** will be available in different regions and at different times of the year.  
-This helps companies **plan when to run machines** and **where to set up factories** to save money and reduce pollution.
-
----
-
-## ⚠️ The Problem
-Many factories in Canada use electricity at fixed times — even when renewable energy is low and grid power is expensive.  
-At the same time, high energy costs make **local manufacturing less competitive**, so Canada imports many goods from abroad.  
-
-ClimaZoneAI solves this by helping companies **know when and where renewable energy is strongest** so they can plan smarter and cheaper production.
-
----
-
-## 💡 The Solution
-ClimaZoneAI combines **weather data** and **AI forecasting** to:
-1. Predict renewable energy potential by region and season.  
-2. Recommend the best times to run power-hungry equipment.  
-3. Show renewable availability on an **interactive map and dashboard**.  
-4. Help governments and industries find **ideal zones** for clean manufacturing.
-
----
-
-## 🌐 Dataset
-- **Source:** Global Historical Climatology Network (GHCN)
-- **Data Includes:** temperature, precipitation, snow, wind speed
-- **Regions Covered:** Vancouver, Calgary, Toronto, Winnipeg, Quebec City, and more  
-
----
-
-## ⚙️ How It Works
-1. **Clean the data** – fix missing values and scale units.  
-2. **Calculate renewable scores** – Solar, Wind, and Hydro indices.  
-3. **Forecast future energy** using AI models like Prophet or Regression.  
-4. **Visualize results** on a map and dashboard built with Python tools (Plotly, Streamlit, Folium).  
-5. **Generate insights** – where and when companies can lower costs and use more renewables.
-
----
-
-## 📊 Example Insights
-
-| Region | Main Renewable | Best Months | Suggestion |
-|--------|----------------|--------------|-------------|
-| Vancouver | Hydro + Wind | Nov–Apr | Good for water-cooled industries |
-| Calgary | Solar | May–Sep | Works well for solar-driven manufacturing |
-| Winnipeg | Wind | Oct–Feb | Great for turbine components |
-| Quebec City | Hydro | Year-round | Suited for battery and clean-tech plants |
-
----
-
-## 💰 Benefits
-- Save **10–20% on electricity costs**  
-- Support **local manufacturing** (less dependence on imports)  
-- Cut **carbon emissions** through cleaner energy use  
-- Help **planners identify renewable-rich industrial zones**
-
----
-
-## 🧭 Deliverables
-- Interactive AI dashboard  
-- Canada renewable map  
-- City-level case study (e.g., Vancouver)  
-- AI forecasting scripts  
-- Short final presentation
-
----
+# 🌤️ ClimaZoneAI – Predicting Canada’s Renewable Energy Potential
 
 ## 🗣️ Pitch Summary
-> “ClimaZoneAI uses weather data and AI to forecast renewable energy potential across Canada.  
-> It helps industries plan their operations when solar, wind, or hydro energy is most available — saving costs, cutting emissions, and supporting Canada’s clean energy future.”
+> “ClimaZoneAI focuses on Canada’s renewable future.  
+> We take weather data, apply scientific formulas, and forecast solar, wind, and hydro energy potential for every city.  
+> With monthly, seasonal, and annual predictions, we give industries and policymakers a clear view of when and where renewable power will be strongest — for smarter, cleaner energy use.”
 
+## 🔍 Overview
+ClimaZoneAI is an AI-powered forecasting platform that predicts **renewable energy potential** for Canadian cities.  
+We use historical weather data to estimate how much solar, wind, and hydro energy could be generated in a region.  
+By combining weather patterns, elevation, and precipitation data, ClimaZoneAI helps industries and city planners make **smarter, data-driven energy decisions**.
 
+---
 
+## ⚠️ Problem Statement
+Canadian industries often operate on fixed electricity schedules, paying high grid costs even when renewable energy is abundant.  
+At the same time, Canada’s large renewable potential—especially from wind and hydro—is underused because **weather-based availability** isn’t forecasted well.  
 
+Our question:
+> How can we predict the potential of renewable energy for each city, using real weather data, to optimize energy use and reduce costs?
 
+---
 
-## File Structure
-![alt text](https://raw.githubusercontent.com/MujtabaF/Data-Jam/refs/heads/main/Format.png?token=GHSAT0AAAAAAC7SP2PGN73YK7L5L53HVU6A2H5F4SA)
+## 💡 Our Approach
+We simplified our dataset to focus **only on Canada**, using region-specific records from the Global Historical Climatology Network (GHCN).  
+From this, ClimaZoneAI:
+1. Extracts and cleans key weather variables (temperature, wind speed, snow depth, and precipitation).  
+2. Uses **custom formulas and elevation-based assumptions** to estimate renewable energy indices:
+   - **Solar Index** – based on temperature and cloud/precipitation patterns  
+   - **Wind Index** – derived from average and peak wind speeds  
+   - **Hydro Index** – estimated from snow, rain, and elevation data  
+3. Computes short-term and long-term indices for:
+   - **30-day (Monthly)** potential  
+   - **Quarterly (Seasonal)** potential  
+   - **Yearly** potential  
+4. Trains forecasting models to predict future renewable potential for each index type.
+
+---
+
+## 📊 Methodology Workflow
+
+| Step | Description | Tools |
+|------|--------------|-------|
+| 1 | Clean & preprocess Canadian weather data | Pandas, NumPy |
+| 2 | Apply formulas using elevation, wind, and precipitation | Python logic |
+| 3 | Compute Solar, Wind, Hydro indices | Custom functions |
+| 4 | Plot graphs for monthly, quarterly, and yearly trends | Matplotlib, Plotly |
+| 5 | Train algorithms for prediction using historical data | Scikit-Learn / Prophet |
+
+---
+
+## 🧠 Example
+**City Input:** Vancouver  
+**Computed Indices (Example Year):**  
+- Solar Index (avg): 0.72  
+- Wind Index (avg): 0.69  
+- Hydro Index (avg): 0.82  
+
+**Predicted Trends:**  
+- 30-day graph → short-term fluctuations  
+- Quarterly graph → seasonal variations  
+- Yearly graph → average renewable potential trend  
+
+---
+
+## 📈 Outputs
+1. **Graphs**
+   - 30-day, quarterly, and annual renewable energy potential for each city  
+2. **Indices**
+   - Computed scores for Solar, Wind, and Hydro (0–1 scale)  
+3. **Forecasts**
+   - Predicted next-year renewable potential based on trained patterns  
+4. **Insights**
+   - Seasonal confidence intervals and climate consistency reports per energy type  
+
+---
+
+## 🌍 Outcomes
+- Identify **where** and **when** renewable energy potential is highest in Canada.  
+- Help industries align production with clean energy availability.  
+- Support **data-driven planning** for investment in local renewable zones.  
+
+---
+
+## 💻 Tech Stack
+**Languages:** Python  
+**Libraries:** Pandas, NumPy, Matplotlib, Plotly, Prophet  
+**Dataset:** Simplified GHCN (Canadian Region Only)  
+**Forecast Model:** Time-series regression + seasonal trend estimation  
+
+---
+
+## 🏁 Deliverables
+- Interactive plots for monthly, quarterly, and yearly energy trends  
+- Predictive models for solar, hydro, and wind index forecasting  
+- Simple dashboard for city-based renewable predictions  
+- Presentation-ready graphs and insights  
+
 
