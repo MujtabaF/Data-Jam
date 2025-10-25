@@ -73,3 +73,12 @@ ClimaZoneAI combines **weather data** and **AI forecasting** to:
 ## 🗣️ Pitch Summary
 > “ClimaZoneAI uses weather data and AI to forecast renewable energy potential across Canada.  
 > It helps industries plan their operations when solar, wind, or hydro energy is most available — saving costs, cutting emissions, and supporting Canada’s clean energy future.”
+
+
+
+
+
+
+## File Structure
+![alt text](https://raw.githubusercontent.com/MujtabaF/Data-Jam/refs/heads/main/Format.png?token=GHSAT0AAAAAAC7SP2PGN73YK7L5L53HVU6A2H5F4SA)
+
