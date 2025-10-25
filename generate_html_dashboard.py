@@ -8,7 +8,8 @@ Can be deployed without a server.
 import pandas as pd
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
+import numpy as np
 
 
 def generate_monthly_summary(df, city, province):
@@ -46,6 +47,88 @@ def generate_monthly_summary(df, city, province):
     monthly = monthly.dropna(subset=['Solar', 'Wind', 'Hydro', 'Renewable_Score'])
     
     return monthly if len(monthly) > 0 else None
+
+
+def generate_forecast(df, city, province, days_ahead):
+    """Generate simple forecast based on historical patterns."""
+    # Filter city data
+    city_data = df[(df['city'] == city) & (df['province'] == province)].copy()
+    
+    if len(city_data) == 0:
+        return None
+    
+    # Get last date in data
+    last_date = pd.to_datetime(city_data['date']).max()
+    
+    # Calculate monthly averages for each metric
+    city_data['month_num'] = pd.to_datetime(city_data['date']).dt.month
+    monthly_patterns = city_data.groupby('month_num').agg({
+        'Solar': 'mean',
+        'Wind': 'mean',
+        'Hydro': 'mean',
+        'Renewable_Score': 'mean'
+    })
+    
+    # Generate future dates
+    future_dates = [last_date + timedelta(days=i+1) for i in range(days_ahead)]
+    
+    # Create forecast based on monthly patterns
+    forecast_data = []
+    for date in future_dates:
+        month_num = date.month
+        if month_num in monthly_patterns.index:
+            forecast_data.append({
+                'date': date.strftime('%Y-%m-%d'),
+                'Solar': float(monthly_patterns.loc[month_num, 'Solar']),
+                'Wind': float(monthly_patterns.loc[month_num, 'Wind']),
+                'Hydro': float(monthly_patterns.loc[month_num, 'Hydro']),
+                'Renewable_Score': float(monthly_patterns.loc[month_num, 'Renewable_Score'])
+            })
+    
+    return forecast_data
+
+
+def aggregate_forecast_by_period(forecast_data, period='daily'):
+    """Aggregate forecast data by period (daily, monthly)."""
+    if not forecast_data or len(forecast_data) == 0:
+        return None
+    
+    df = pd.DataFrame(forecast_data)
+    df['date'] = pd.to_datetime(df['date'])
+    
+    if period == 'daily':
+        # Return as is
+        result = []
+        for _, row in df.iterrows():
+            result.append({
+                'period': row['date'].strftime('%Y-%m-%d'),
+                'Solar': round(float(row['Solar']), 3),
+                'Wind': round(float(row['Wind']), 3),
+                'Hydro': round(float(row['Hydro']), 3),
+                'Renewable_Score': round(float(row['Renewable_Score']), 3)
+            })
+        return result
+    
+    elif period == 'monthly':
+        # Aggregate by month
+        df['month'] = df['date'].dt.to_period('M')
+        monthly = df.groupby('month').agg({
+            'Solar': 'mean',
+            'Wind': 'mean',
+            'Hydro': 'mean',
+            'Renewable_Score': 'mean'
+        }).reset_index()
+        
+        result = []
+        for _, row in monthly.iterrows():
+            result.append({
+                'period': str(row['month']),
+                'Solar': round(float(row['Solar']), 3),
+                'Wind': round(float(row['Wind']), 3),
+                'Hydro': round(float(row['Hydro']), 3),
+                'Renewable_Score': round(float(row['Renewable_Score']), 3)
+            })
+        return result
 
 
 def get_available_cities(df):
@@ -86,7 +169,7 @@ def generate_html_dashboard():
         'renewable_score': monthly_data['Renewable_Score'].round(3).tolist()
     }
     
-    # Get all cities data
+    # Get all cities historical data
     all_cities_data = {}
     for province, cities in cities_data.items():
         for city in cities:
@@ -100,6 +183,31 @@ def generate_html_dashboard():
                     'hydro': monthly['Hydro'].round(3).tolist(),
                     'renewable_score': monthly['Renewable_Score'].round(3).tolist()
                 }
+    
+    # Generate forecasts for all cities
+    print("🔮 Generating forecasts...")
+    all_cities_forecasts = {}
+    for province, cities in cities_data.items():
+        for city in cities:
+            key = f"{city}|{province}"
+            
+            # Generate forecasts for different periods
+            forecast_30d = generate_forecast(df, city, province, 30)
+            forecast_4m = generate_forecast(df, city, province, 120)  # ~4 months
+            forecast_1y = generate_forecast(df, city, province, 365)  # 1 year
+            
+            if forecast_30d:
+                # Aggregate forecasts appropriately
+                daily_30d = aggregate_forecast_by_period(forecast_30d, 'daily')
+                monthly_4m = aggregate_forecast_by_period(forecast_4m, 'monthly')
+                monthly_1y = aggregate_forecast_by_period(forecast_1y, 'monthly')
+                
+                all_cities_forecasts[key] = {
+                    '30d': daily_30d,
+                    '4m': monthly_4m,
+                    '1y': monthly_1y
+                }
+    
     
     # HTML Template
     html_content = f"""<!DOCTYPE html>
@@ -317,10 +425,19 @@ def generate_html_dashboard():
                         {generate_city_options(cities_data, default_province)}
                     </select>
                 </div>
+                
+                <div class="control-item">
+                    <label for="forecast-period">🔮 Forecast Period</label>
+                    <select id="forecast-period" onchange="updateCharts()">
+                        <option value="30d" selected>30 Days</option>
+                        <option value="4m">4 Months</option>
+                        <option value="1y">1 Year</option>
+                    </select>
+                </div>
             </div>
             
             <div class="info-box">
-                <p>📊 Displaying monthly average data. Each point represents one month's renewable energy potential.</p>
+                <p>📊 Select a forecast period to view predictions. Historical patterns are used for forecasting.</p>
             </div>
         </div>
         
@@ -387,6 +504,7 @@ def generate_html_dashboard():
         // Data storage
         const citiesData = {json.dumps(cities_data, indent=8)};
         const allCitiesData = {json.dumps(all_cities_data, indent=8)};
+        const allCitiesForecasts = {json.dumps(all_cities_forecasts, indent=8)};
         
         // Update cities dropdown when province changes
         function updateCities() {{
@@ -406,17 +524,34 @@ def generate_html_dashboard():
             updateCharts();
         }}
         
-        // Update charts when city changes
+        // Update charts when city or forecast period changes
         function updateCharts() {{
             const province = document.getElementById('province-select').value;
             const city = document.getElementById('city-select').value;
+            const forecastPeriod = document.getElementById('forecast-period').value;
             const key = `${{city}}|${{province}}`;
             
-            const data = allCitiesData[key];
-            if (!data) {{
-                console.error('No data for', key);
+            // Get forecast data based on selected period
+            const forecastData = allCitiesForecasts[key] ? allCitiesForecasts[key][forecastPeriod] : null;
+            if (!forecastData || forecastData.length === 0) {{
+                console.error('No forecast data for', key, forecastPeriod);
                 return;
             }}
+            
+            // Extract data arrays
+            const periods = forecastData.map(d => d.period);
+            const solar = forecastData.map(d => d.Solar);
+            const wind = forecastData.map(d => d.Wind);
+            const hydro = forecastData.map(d => d.Hydro);
+            const renewableScore = forecastData.map(d => d.Renewable_Score);
+            
+            const data = {{
+                months: periods,
+                solar: solar,
+                wind: wind,
+                hydro: hydro,
+                renewable_score: renewableScore
+            }};
             
             // Update metrics
             const avgSolar = (data.solar.reduce((a, b) => a + b, 0) / data.solar.length).toFixed(2);
